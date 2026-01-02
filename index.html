@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金硕珍的来信</title>
+    <!-- 引入中文手写字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        /* 全局重置 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background-color: #1a1a1a; /* 深灰背景，符合BE压抑感 */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Ma Shan Zheng', cursive; /* 手写字体 */
+            color: #333;
+            perspective: 1000px;
+        }
+
+        /* 背景氛围特效 - 尘埃光点 */
+        #particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 信封容器 */
+        .envelope-wrapper {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            background: #4a3b32; /* 深褐色信封 */
+            border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.5s ease;
+        }
+
+        .envelope-wrapper:hover {
+            transform: translateY(-5px);
+        }
+
+        /* 信封翻盖 */
+        .lid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-top: 100px solid #5d4a3f; /* 稍亮的褐色 */
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            transform-origin: top;
+            transition: transform 0.8s ease 0.5s, z-index 0.2s 0.5s;
+            z-index: 20;
+        }
+
+        .lid.open {
+            transform: rotateX(180deg);
+            z-index: 5;
+        }
+
+        /* 信封正面遮挡 */
+        .pocket {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-bottom: 100px solid #6b564a;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        /* 封口贴（火漆印） */
+        .seal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: #8B0000;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 30;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255,255,255,0.2);
+            font-size: 12px;
+            border: 2px dashed rgba(255,255,255,0.1);
+            transition: opacity 0.5s;
+        }
+
+        .seal.broken {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 信纸 */
+        .letter {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 90%;
+            background: #f4e4bc; /* 泛黄纸张色 */
+            background-image: linear-gradient(#e3d1a8 1px, transparent 1px);
+            background-size: 100% 1.5em; /* 信纸横线 */
+            border-radius: 3px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            transition: bottom 1s ease 1s, height 1s ease 1s, z-index 0s 1s;
+            z-index: 10;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .letter.open {
+            bottom: -80px; /* 根据实际屏幕调整 */
+            height: 450px; /* 展开后的高度 */
+            z-index: 25; /* 提到最上层 */
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        /* 移动端适配调整 */
+        @media (max-width: 600px) {
+            .letter.open {
+                width: 95%;
+                height: 80vh; /* 手机上占满屏幕 */
+                bottom: -20vh;
+                top: 5vh;
+            }
+        }
+
+        /* 文字内容 */
+        .text-line {
+            opacity: 0;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+            line-height: 1.5em;
+            color: #2c2c2c;
+            text-shadow: 0 0 1px rgba(0,0,0,0.1);
+        }
+        
+        .fade-in {
+            animation: fadeInEffect 1.5s forwards;
+        }
+
+        @keyframes fadeInEffect {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 提示点击 */
+        .hint {
+            position: absolute;
+            bottom: -40px;
+            width: 100%;
+            text-align: center;
+            color: #aaa;
+            font-size: 12px;
+            font-family: sans-serif;
+            opacity: 0.7;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 背景音乐：请替换 src 里的链接 -->
+    <!-- 推荐使用外链，例如网易云音乐直链或其他图床直链 -->
+    <audio id="bgm" loop>
+        <!-- 这里我放了一个示例的悲伤钢琴曲直链，你需要换成你选定的 -->
+        <source src="https://music.163.com/song/media/outer/url?id=1386599528.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- 氛围特效画布 -->
+    <canvas id="particles"></canvas>
+
+    <div class="envelope-wrapper" id="envelope">
+        <div class="lid" id="lid"></div>
+        <div class="letter" id="letter">
+            <!-- 这里是信的内容，根据你的人设编写 -->
+            <p class="text-line">User，展信佳。</p>
+            <p class="text-line">北水的雨季又要到了，不知道你那里有没有带伞。</p>
+            <p class="text-line">原谅我用这种方式告别，面对你，我怕我会心软。</p>
+            <p class="text-line">曾经那个穿白衬衫的少年，已经死在还不完的账单里了。</p>
+            <p class="text-line">现在的我双手太脏，抱不紧你，也给不了你想要的未来。</p>
+            <p class="text-line">爱是真的，但想让你走也是真的。</p>
+            <p class="text-line">别等我了，那个无底洞太深，不该把你这束光也拽进来。</p>
+            <p class="text-line">你应该去找个能在下雨天为你送伞的人，而不是像我这样。</p>
+            <p class="text-line">忘了我，这是我对你最后的请求，也是我最后的爱意。</p>
+            <p class="text-line" style="text-align: right; margin-top: 20px;">—— 那个已成过去的 金硕珍</p>
+        </div>
+        <div class="pocket"></div>
+        <div class="seal" id="seal">Jin</div>
+        <div class="hint" id="hint">点击封口贴打开</div>
+    </div>
+
+    <script>
+        // --- 1. 氛围特效：飘落的尘埃/微光 ---
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 + 0.2; // 缓慢下落
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.y > canvas.height) {
+                    this.y = 0 - this.size;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(200, 200, 200, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < 100; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateParticles);
+        }
+        initParticles();
+        animateParticles();
+
+        // --- 2. 互动逻辑 ---
+        const envelope = document.getElementById('envelope');
+        const lid = document.getElementById('lid');
+        const letter = document.getElementById('letter');
+        const seal = document.getElementById('seal');
+        const hint = document.getElementById('hint');
+        const bgm = document.getElementById('bgm');
+        const lines = document.querySelectorAll('.text-line');
+
+        let isOpened = false;
+
+        envelope.addEventListener('click', function() {
+            if (isOpened) return;
+            isOpened = true;
+
+            // 1. 播放音乐 (浏览器要求必须有用户交互才能播放音频)
+            bgm.volume = 0.6; // 设置音量
+            bgm.play().catch(error => {
+                console.log("音频播放失败，可能是浏览器策略拦截", error);
+            });
+
+            // 2. 动画序列
+            seal.classList.add('broken'); // 火漆印消失
+            hint.style.display = 'none'; // 提示消失
+            
+            // 稍等片刻翻盖
+            setTimeout(() => {
+                lid.classList.add('open');
+            }, 100);
+
+            // 拿出信纸
+            setTimeout(() => {
+                letter.classList.add('open');
+            }, 800);
+
+            // 文字逐行显示 (打字机效果逻辑)
+            let delay = 2000; // 信纸展开后等待的时间
+            lines.forEach((line, index) => {
+                setTimeout(() => {
+                    line.classList.add('fade-in');
+                }, delay + (index * 1500)); // 每行间隔1.5秒显示
+            });
+        });
+
+        // 窗口大小改变时重置画布
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
