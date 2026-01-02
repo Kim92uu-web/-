@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>金硕珍的来信</title>
+    <title>再见，金硕珍</title>
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400&display=swap" rel="stylesheet">
     <style>
         /* --- 基础设置 --- */
@@ -20,134 +20,114 @@
             position: relative;
         }
 
-        /* --- 阶段一：手机聊天界面 --- */
+        /* --- 阶段一 & 四：手机聊天界面 --- */
         #phone-screen {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             background: #1c1c1e;
-            position: absolute;
-            top: 0; left: 0;
+            position: absolute; top: 0; left: 0;
             z-index: 200;
-            display: flex;
-            flex-direction: column;
-            transition: opacity 1.5s ease, transform 1.5s ease;
+            display: flex; flex-direction: column;
+            transition: opacity 1.5s ease;
         }
 
         .chat-header {
             height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #1c1c1e;
-            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            background: #1c1c1e; color: #fff;
             border-bottom: 1px solid #2c2c2e;
-            font-size: 17px;
-            font-weight: 500;
-            padding-top: 10px;
+            font-size: 17px; font-weight: 500; padding-top: 10px;
         }
 
         .chat-area {
-            flex: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+            flex: 1; padding: 20px;
+            display: flex; flex-direction: column; justify-content: flex-end;
             overflow-y: auto;
         }
 
         .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            margin: 6px 0;
-            border-radius: 18px;
-            font-size: 15px;
-            line-height: 1.5;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: popIn 0.3s forwards;
-            word-wrap: break-word;
+            max-width: 85%; padding: 12px 16px; margin: 6px 0;
+            border-radius: 18px; font-size: 15px; line-height: 1.5;
+            opacity: 0; transform: translateY(10px);
+            animation: popIn 0.3s forwards; word-wrap: break-word;
         }
-
         .message.received { background: #2c2c2e; color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
         .message.sent { background: #0A84FF; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        
+        /* 红色感叹号样式 */
+        .error-msg { font-size: 12px; color: #ff3b30; align-self: flex-end; margin-top: -4px; margin-right: 5px; opacity: 0; transition: opacity 0.5s;}
 
         .input-area {
-            padding: 15px; /* iPhone 底部安全区 */
-            padding-bottom: 40px;
-            background: #1c1c1e;
-            border-top: 1px solid #2c2c2e;
+            padding: 15px; padding-bottom: 40px;
+            background: #1c1c1e; border-top: 1px solid #2c2c2e;
         }
 
+        /* 模拟输入框 */
         .fake-input {
-            width: 100%;
-            padding: 12px 15px;
-            background: #000;
-            border-radius: 20px;
-            color: #fff;
-            font-size: 15px;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
+            width: 100%; padding: 12px 15px;
+            background: #000; border-radius: 20px;
+            color: #fff; font-size: 15px; min-height: 44px;
+            display: flex; align-items: center;
+        }
+        
+        /* 真实输入框（用于最后阶段） */
+        #real-input {
+            width: 100%; padding: 12px 15px;
+            background: #000; border: none; border-radius: 20px;
+            color: #fff; font-size: 15px; outline: none;
+            display: none; /* 初始隐藏 */
+        }
+        #send-btn {
+            position: absolute; right: 25px; bottom: 50px;
+            color: #0A84FF; font-weight: bold; cursor: pointer; display: none;
         }
 
         .typing-cursor::after { content: '|'; animation: blink 1s infinite; color: #0A84FF; margin-left: 2px; }
 
         .start-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 300;
+            background: rgba(0,0,0,0.8); z-index: 300;
             display: flex; justify-content: center; align-items: center;
-            color: #fff; font-size: 14px; letter-spacing: 1px;
-            transition: opacity 0.5s; cursor: pointer;
+            color: #fff; font-size: 14px; letter-spacing: 2px;
+            transition: opacity 0.5s; cursor: pointer; flex-direction: column;
         }
 
         /* --- 阶段二：信件场景 --- */
         #letter-scene {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #111;
+            background: #050505;
             display: flex; justify-content: center; align-items: center;
             opacity: 0; pointer-events: none;
             transition: opacity 2s ease;
             font-family: 'Ma Shan Zheng', cursive;
             perspective: 1000px;
-            overflow: hidden;
         }
         #letter-scene.active { opacity: 1; pointer-events: auto; }
 
-        /* 雨滴画布 */
         #rain-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
 
-        /* 信封容器 */
         .envelope-wrapper {
-            position: relative;
-            width: 80vw; /* 适配手机宽度 */
-            max-width: 320px;
-            height: 55vw; /* 按比例 */
-            max-height: 220px;
-            background: #4a3b32;
-            border-radius: 5px;
+            position: relative; width: 80vw; max-width: 320px;
+            height: 55vw; max-height: 220px;
+            background: #4a3b32; border-radius: 5px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            cursor: pointer;
-            z-index: 20;
+            cursor: pointer; z-index: 20;
             transition: transform 0.5s;
         }
         
-        /* 信封部件 */
         .lid {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border-top: 110px solid #5d4a3f; /* 调整盖子大小 */
+            border-top: 110px solid #5d4a3f;
             border-left: 160px solid transparent; border-right: 160px solid transparent;
             transform-origin: top; transition: transform 0.8s ease 0.5s, z-index 0.2s 0.5s; z-index: 30;
             pointer-events: none;
         }
         .lid.open { transform: rotateX(180deg); z-index: 1; }
-
         .pocket {
             position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
             border-bottom: 110px solid #6b564a;
             border-left: 160px solid transparent; border-right: 160px solid transparent;
             z-index: 25; pointer-events: none;
         }
-
         .seal {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 46px; height: 46px; background: #8B0000; border-radius: 50%;
@@ -158,60 +138,76 @@
         }
         .seal.broken { opacity: 0; transform: translate(-50%, -50%) scale(1.5); pointer-events: none; }
 
-        /* --- 核心修复：信纸 --- */
+        /* 信纸 */
         .letter {
-            position: absolute;
-            bottom: 5px; 
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            height: 90%;
+            position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+            width: 90%; height: 90%;
             background: #f4e4bc;
             background-image: linear-gradient(#e3d1a8 1px, transparent 1px);
-            background-size: 100% 30px; /* 行间距 */
-            border-radius: 4px;
-            padding: 20px;
+            background-size: 100% 30px;
+            border-radius: 4px; padding: 20px;
             box-shadow: 0 0 5px rgba(0,0,0,0.1);
-            z-index: 5; /* 初始在口袋后面 */
-            transition: all 1s ease 0.8s; /* 延迟动画 */
-            overflow: hidden;
-            display: flex; 
-            flex-direction: column;
+            z-index: 5; transition: all 1s ease 0.8s;
+            overflow: hidden; display: flex; flex-direction: column;
         }
-
-        /* 信纸展开后的状态 - 这里的CSS是关键修复 */
         .letter.open {
-            position: fixed; /* 脱离信封，相对于屏幕定位 */
-            top: 10%; /* 距离顶部 */
-            bottom: 10%; /* 距离底部 */
-            height: auto; /* 自动撑满中间区域 */
-            width: 90vw; /* 屏幕宽度的90% */
-            max-width: 400px; /* 限制最大宽度 */
-            left: 50%;
-            transform: translateX(-50%); /* 居中 */
-            z-index: 100; /* 最顶层 */
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            overflow-y: auto; /* 允许纵向滚动 */
-            -webkit-overflow-scrolling: touch; /* 丝滑滚动 */
-            padding-bottom: 50px; /* 底部留白 */
+            position: fixed; top: 10%; bottom: 10%; height: auto; width: 90vw; max-width: 400px;
+            left: 50%; transform: translateX(-50%);
+            z-index: 100; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 50px;
         }
-
-        /* 滚动条美化 */
         .letter::-webkit-scrollbar { width: 4px; }
         .letter::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 2px; }
 
         .text-line {
-            opacity: 0;
-            margin-bottom: 10px;
-            font-size: 18px; /* 调大字号 */
-            line-height: 30px; /* 对齐信纸横线 */
-            color: #2c2c2c;
-            flex-shrink: 0; /* 防止文字被压缩 */
+            opacity: 0; margin-bottom: 10px; font-size: 18px; line-height: 30px;
+            color: #2c2c2c; flex-shrink: 0;
+        }
+        .fade-in { animation: fadeInEffect 1.5s forwards; }
+
+        /* --- 玩法：燃烧的照片 --- */
+        .polaroid-container {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(5deg) scale(0);
+            width: 250px; padding: 15px 15px 50px 15px;
+            background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 200; opacity: 0; transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+        .polaroid-container.show { opacity: 1; transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
+        
+        .photo-img {
+            width: 100%; height: 220px; object-fit: cover;
+            filter: sepia(0.3) contrast(1.1); background: #eee;
         }
         
-        .fade-in { animation: fadeInEffect 1.5s forwards; }
-        .hint-text { position: absolute; bottom: -40px; width: 100%; text-align: center; color: #aaa; font-size: 12px; animation: blink 2s infinite; }
+        /* 燃烧特效 */
+        .burning {
+            animation: burnAway 2.5s forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes burnAway {
+            0% { filter: brightness(1); opacity: 1; mask-image: linear-gradient(to bottom, black 100%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 100%, transparent 100%); }
+            40% { filter: brightness(1.5) sepia(1) hue-rotate(-30deg); }
+            100% { 
+                filter: brightness(0) blur(10px); 
+                opacity: 0; 
+                transform: translate(-50%, -40%) rotate(10deg) scale(0.9);
+                /* 从中心向外扩散的遮罩模拟燃烧殆尽 */
+                mask-image: radial-gradient(circle, transparent 100%, black 100%);
+                -webkit-mask-image: radial-gradient(circle, transparent 100%, black 100%);
+            }
+        }
+        
+        /* 模拟火光 */
+        .fire-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(255,100,0,0.6) 0%, transparent 70%);
+            opacity: 0; mix-blend-mode: hard-light; pointer-events: none;
+        }
+        .burning .fire-overlay { animation: fireFlash 2.5s forwards; }
 
+        @keyframes fireFlash { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInEffect { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -220,23 +216,28 @@
 </head>
 <body>
 
-    <!-- ⚠️ 请务必替换这里的链接 -->
     <audio id="bgm" loop preload="auto">
-        <source src="https://music.163.com/song/media/outer/url?id= 2015896805.mp3
-" type="audio/mpeg">
+        <source src="https://music.163.com/song/media/outer/url?id=1386599528.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="fire-sound" preload="auto">
+        <!-- 简单的燃烧音效 -->
+        <source src="https://www.soundjay.com/nature/fire-1.mp3" type="audio/mpeg">
     </audio>
 
-    <!-- 阶段一：手机界面 -->
+    <!-- 阶段一：初始界面 -->
     <div id="phone-screen">
         <div class="start-overlay" id="start-btn">
-            <div>► 点击开始回忆</div>
+            <div style="font-size: 20px; margin-bottom: 10px;">North Water County</div>
+            <div style="font-size: 12px; color: #aaa;">🎧 戴上耳机体验最佳</div>
+            <div style="margin-top: 30px; border: 1px solid #fff; padding: 10px 20px; border-radius: 20px;">点击开始</div>
         </div>
         <div class="chat-header">金硕珍 (Jin)</div>
-        <div class="chat-area" id="chat-box">
-            <!-- 消息动态生成 -->
-        </div>
+        <div class="chat-area" id="chat-box"></div>
         <div class="input-area">
-            <div class="fake-input typing-cursor" id="input-text"></div>
+            <div class="fake-input typing-cursor" id="fake-input-text"></div>
+            <!-- 最后的真实输入框 -->
+            <input type="text" id="real-input" placeholder="给他发最后一条信息..." maxlength="20">
+            <div id="send-btn">发送</div>
         </div>
     </div>
 
@@ -256,97 +257,92 @@
                 <div class="text-line">你应该去找个能在下雨天为你送伞的人，而不是像我这样。</div>
                 <div class="text-line">忘了我，这是我对你最后的请求，也是我最后的爱意。</div>
                 <div class="text-line" style="text-align: right; margin-top: 30px;">—— 那个已成过去的 金硕珍</div>
-                <div style="height: 50px;"></div> <!-- 底部占位符 -->
+                <div style="height: 100px;"></div>
             </div>
             <div class="pocket"></div>
             <div class="seal" id="seal">Jin</div>
-            <div class="hint-text" id="open-hint">点击开启</div>
+            <div style="position:absolute; bottom:-30px; width:100%; text-align:center; color:#888; font-size:12px; animation:blink 2s infinite;" id="open-hint">点击开启</div>
         </div>
     </div>
 
+    <!-- 阶段三：照片 -->
+    <div class="polaroid-container" id="photo-card">
+        <div class="fire-overlay"></div>
+        <!-- ⚠️ 请在这里替换成你们的合照/金硕珍的照片链接 -->
+        <img src="https://img.baidu.re/i/2026/01/h3ra45.jpg" class="photo-img" alt="Memory">
+        <div style="text-align: center; color: #333; margin-top: 10px; font-family: 'Ma Shan Zheng'; font-size: 18px;">That Year @ Beishui</div>
+        <div style="text-align: center; color: #999; font-size: 10px; margin-top: 5px;">点击销毁回忆</div>
+    </div>
+
     <script>
-        // --- 逻辑控制 ---
+        // --- 核心变量 ---
         const startBtn = document.getElementById('start-btn');
         const phoneScreen = document.getElementById('phone-screen');
         const chatBox = document.getElementById('chat-box');
-        const inputText = document.getElementById('input-text');
+        const fakeInput = document.getElementById('fake-input-text');
         const letterScene = document.getElementById('letter-scene');
         const bgm = document.getElementById('bgm');
+        const fireSound = document.getElementById('fire-sound');
+        
+        let rainSpeed = 5; // 初始雨速
 
-        // 剧情脚本
-        let step = 0;
-
+        // --- 启动逻辑 ---
         startBtn.addEventListener('click', () => {
             startBtn.style.opacity = 0;
             setTimeout(() => startBtn.style.display = 'none', 500);
-            
-            // 修复：在这里触发音乐，确保移动端能播放
-            bgm.volume = 0.6;
-            bgm.play().then(() => {
-                console.log("BGM playing");
-            }).catch(e => {
-                console.log("Audio play failed, waiting for next interaction", e);
-            });
-
-            runDrama();
+            bgm.volume = 0.5;
+            bgm.play().catch(e => console.log("Audio needed interaction"));
+            runDramaPart1();
         });
 
-        async function typeText(text) {
-            inputText.innerText = "";
+        // --- 模拟打字/聊天 ---
+        async function typeFake(text) {
+            fakeInput.innerText = "";
             for (let i = 0; i < text.length; i++) {
-                inputText.innerText += text[i];
-                // 随机打字速度，模拟真人
-                await new Promise(r => setTimeout(r, 80 + Math.random() * 100)); 
+                fakeInput.innerText += text[i];
+                await new Promise(r => setTimeout(r, 80 + Math.random() * 50)); 
             }
-            await new Promise(r => setTimeout(r, 600)); // 思考停顿
+            await new Promise(r => setTimeout(r, 600));
         }
-
-        async function deleteText() {
-            let text = inputText.innerText;
+        async function deleteFake() {
+            let text = fakeInput.innerText;
             while (text.length > 0) {
                 text = text.slice(0, -1);
-                inputText.innerText = text;
-                await new Promise(r => setTimeout(r, 30)); // 快速删除
+                fakeInput.innerText = text;
+                await new Promise(r => setTimeout(r, 30)); 
             }
         }
-
-        function addMessage(text) {
+        function addMsg(text, type='received') {
             const msg = document.createElement('div');
-            msg.className = 'message received';
+            msg.className = `message ${type}`;
             msg.innerText = text;
             chatBox.appendChild(msg);
-            chatBox.scrollTop = chatBox.scrollHeight; // 自动滚动到底部
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        async function runDrama() {
-            // 1. 犹豫输入
+        async function runDramaPart1() {
             await new Promise(r => setTimeout(r, 1000));
-            await typeText("其实我不想分手的...");
+            // 剧情开始
+            await typeFake("我们...见一面吧？");
             await new Promise(r => setTimeout(r, 800));
-            await deleteText();
+            await deleteFake(); // 犹豫撤回
 
-            // 2. 再次尝试
-            await typeText("我真的很想见你");
+            await typeFake("我好想你");
             await new Promise(r => setTimeout(r, 1000));
-            await deleteText();
+            await deleteFake(); // 再次撤回
 
-            // 3. 决绝发送
-            await typeText("我们算了吧。");
+            await typeFake("我们算了吧。"); // 狠心
             await new Promise(r => setTimeout(r, 500));
-            inputText.innerText = ""; // 发送清空
-            addMessage("我们算了吧。");
+            fakeInput.innerText = "";
+            addMsg("我们算了吧。", 'sent');
             
-            await new Promise(r => setTimeout(r, 1500));
+            await new Promise(r => setTimeout(r, 2000));
+            addMsg("别等我了，不值得。", 'sent');
             
-            await typeText("别等我了，不值得。");
-            inputText.innerText = "";
-            addMessage("别等我了，不值得。");
-
-            // 4. 转场
-            await new Promise(r => setTimeout(r, 2500));
+            await new Promise(r => setTimeout(r, 3000));
+            
+            // 转场到信件
             phoneScreen.style.opacity = 0;
-            phoneScreen.style.transform = "scale(0.95)";
-            
             setTimeout(() => {
                 phoneScreen.style.display = 'none';
                 letterScene.classList.add('active');
@@ -358,59 +354,135 @@
         const lid = document.getElementById('lid');
         const letter = document.getElementById('letter');
         const seal = document.getElementById('seal');
-        const openHint = document.getElementById('open-hint');
         const lines = document.querySelectorAll('.text-line');
+        const photoCard = document.getElementById('photo-card');
         let isOpened = false;
 
         envelope.addEventListener('click', function() {
             if (isOpened) return;
             isOpened = true;
-
-            openHint.style.display = 'none';
+            document.getElementById('open-hint').style.display = 'none';
             seal.classList.add('broken');
             
-            // 动画序列
             setTimeout(() => lid.classList.add('open'), 200);
             setTimeout(() => letter.classList.add('open'), 800);
             
-            // 文字逐行显现
-            let delay = 1800; // 等待信纸展开
+            let delay = 1800;
             lines.forEach((line, index) => {
                 setTimeout(() => {
                     line.classList.add('fade-in');
-                    // 每显示一行，自动尝试向下滚动一点点
-                    if(index > 3) {
-                       letter.scrollTop = letter.scrollHeight; 
+                    rainSpeed += 1; // 雨越下越大
+                    if(index > 4) letter.scrollTop = letter.scrollHeight;
+                    
+                    // 最后一行显示完，掉落照片
+                    if (index === lines.length - 1) {
+                        setTimeout(() => dropPhoto(), 2000);
                     }
-                }, delay + (index * 1200));
+                }, delay + (index * 1500)); // 阅读速度变慢，更伤感
             });
         });
 
-        // --- 雨滴特效 ---
+        // --- 照片玩法 ---
+        function dropPhoto() {
+            photoCard.classList.add('show');
+        }
+
+        photoCard.addEventListener('click', function() {
+            if(this.classList.contains('burning')) return;
+            
+            // 播放燃烧音效
+            fireSound.volume = 0.8;
+            fireSound.play();
+            
+            // 开始燃烧动画
+            this.classList.add('burning');
+            
+            // 烧完后的逻辑
+            setTimeout(() => {
+                this.style.display = 'none';
+                letterScene.style.opacity = 0; // 信件背景消失
+                showFinalInput(); // 进入最后的 BE 环节
+            }, 2400);
+        });
+
+        // --- 最终环节：被拒收的消息 ---
+        function showFinalInput() {
+            setTimeout(() => {
+                phoneScreen.style.display = 'flex';
+                // 清空之前的聊天记录，制造一种物是人非的感觉，或者保留
+                // 这里选择保留，但界面要看起来更冷清
+                phoneScreen.style.opacity = 1;
+                document.querySelector('.fake-input').style.display = 'none';
+                const realInput = document.getElementById('real-input');
+                const sendBtn = document.getElementById('send-btn');
+                
+                realInput.style.display = 'block';
+                sendBtn.style.display = 'block';
+                realInput.focus();
+                
+                // 绑定发送事件
+                sendBtn.addEventListener('click', handleFinalSend);
+            }, 1000);
+        }
+
+        function handleFinalSend() {
+            const realInput = document.getElementById('real-input');
+            const txt = realInput.value;
+            if(!txt) return;
+
+            // 1. 显示用户发送的气泡
+            addMsg(txt, 'sent');
+            realInput.value = '';
+            
+            // 2. 延迟显示红色感叹号
+            setTimeout(() => {
+                const lastMsg = chatBox.lastElementChild;
+                const errorSpan = document.createElement('span');
+                errorSpan.className = 'error-msg';
+                errorSpan.innerHTML = '<br><strong>!</strong> 消息已发出，但被对方拒收了。';
+                errorSpan.style.display = 'block';
+                errorSpan.style.color = '#ff3b30';
+                errorSpan.style.fontSize = '12px';
+                errorSpan.style.marginTop = '5px';
+                
+                lastMsg.appendChild(errorSpan);
+                lastMsg.style.opacity = 0.7; // 消息变暗
+                
+                // 此时背景音乐渐弱停止
+                let vol = 0.5;
+                const fadeOut = setInterval(() => {
+                    if(vol > 0) {
+                        vol -= 0.05;
+                        bgm.volume = Math.max(0, vol);
+                    } else {
+                        clearInterval(fadeOut);
+                        bgm.pause();
+                    }
+                }, 200);
+                
+            }, 500);
+        }
+
+        // --- 雨滴特效 (Canvas) ---
         const rCanvas = document.getElementById('rain-canvas');
         const rCtx = rCanvas.getContext('2d');
-        
-        function resizeCanvas() {
-            rCanvas.width = window.innerWidth;
-            rCanvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        function resizeCanvas() { rCanvas.width = window.innerWidth; rCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
         const rains = [];
         class Rain {
             constructor() {
+                this.reset();
+            }
+            reset() {
                 this.x = Math.random() * rCanvas.width;
-                this.y = Math.random() * rCanvas.height;
+                this.y = Math.random() * -rCanvas.height;
                 this.length = Math.random() * 20 + 10;
-                this.speed = Math.random() * 5 + 5;
+                this.speed = Math.random() * 2 + rainSpeed; // 基础速度
             }
             update() {
-                this.y += this.speed;
-                if (this.y > rCanvas.height) {
-                    this.y = -this.length;
-                    this.x = Math.random() * rCanvas.width;
-                }
+                this.y += this.speed + (rainSpeed - 5); // 动态加速
+                if (this.y > rCanvas.height) this.reset();
             }
             draw() {
                 rCtx.strokeStyle = 'rgba(174,194,224,0.3)';
@@ -421,7 +493,7 @@
                 rCtx.stroke();
             }
         }
-        for(let i=0; i<80; i++) rains.push(new Rain());
+        for(let i=0; i<100; i++) rains.push(new Rain());
         
         function animateRain() {
             rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
