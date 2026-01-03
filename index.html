@@ -21,13 +21,13 @@
         #music-btn {
             position: fixed; top: 15px; right: 15px;
             width: 32px; height: 32px;
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.2);
             border-radius: 50%; z-index: 1000;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
             font-size: 14px;
         }
-        #music-btn.playing { animation: spin 4s linear infinite; background: rgba(255,255,255,0.5); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        #music-btn.playing { animation: spin 4s linear infinite; background: rgba(255,255,255,0.6); box-shadow: 0 0 10px rgba(255,255,255,0.4); }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* --- 聊天界面 --- */
@@ -70,7 +70,7 @@
         .bubble.received { background: #2c2c2e; color: #fff; border-bottom-left-radius: 4px; } /* 左侧灰色 */
         .bubble.sent { background: #0A84FF; color: #fff; border-bottom-right-radius: 4px; }     /* 右侧蓝色 */
 
-        /* 拒收提示 UI */
+        /* 拒收提示 UI - 红色感叹号 */
         .error-wrapper {
             display: flex; align-items: center; justify-content: flex-end;
             width: 100%; margin-top: 5px;
@@ -210,11 +210,10 @@
     <!-- 音乐控制开关 -->
     <div id="music-btn">🎵</div>
 
-    <!-- 换源：尝试使用一个相对稳定的 CDN 资源，或者你可以替换成你确认能播放的 mp3 链接 -->
+    <!-- 换源：使用一个兼容性更好的外链 (悲伤钢琴曲) -->
     <audio id="bgm" loop preload="auto">
-        <source src="https://files.catbox.moe/pye04m.mp3" type="audio/mpeg">
-        <!-- 如果上面的失效，可以用这个备用（请在部署前测试） -->
-        <!-- <source src="你的MP3链接.mp3" type="audio/mpeg"> -->
+        <source src="https://files.catbox.moe/pye04m.mp3
+" type="audio/mpeg">
     </audio>
     
     <!-- 燃烧音效 -->
@@ -266,8 +265,7 @@
     <div class="polaroid-container" id="photo-card">
         <div class="fire-overlay"></div>
         <!-- ⚠️ 图片替换处 -->
-        <img src="https://img.baidu.re/i/2026/01/fekjkw.jpeg
-" class="photo-img" alt="Memory">
+        <img src="https://img.baidu.re/i/2026/01/fv0txk.jpeg" class="photo-img" alt="Memory">
         <div style="text-align: center; color: #333; margin-top: 10px; font-family: 'Ma Shan Zheng'; font-size: 18px;">那年的北水县</div>
         <div style="text-align: center; color: #999; font-size: 10px; margin-top: 5px;">点击销毁回忆</div>
     </div>
@@ -491,4 +489,31 @@
         function resizeCanvas() { rCanvas.width = window.innerWidth; rCanvas.height = window.innerHeight; }
         window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
-        const rains =
+        const rains = [];
+        class Rain {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * rCanvas.width;
+                this.y = Math.random() * -rCanvas.height;
+                this.length = Math.random() * 20 + 10;
+                this.speed = Math.random() * 2 + rainSpeed;
+            }
+            update() {
+                this.y += this.speed + (rainSpeed - 5);
+                if (this.y > rCanvas.height) this.reset();
+            }
+            draw() {
+                rCtx.strokeStyle = 'rgba(174,194,224,0.3)'; rCtx.lineWidth = 1.5;
+                rCtx.beginPath(); rCtx.moveTo(this.x, this.y); rCtx.lineTo(this.x, this.y + this.length); rCtx.stroke();
+            }
+        }
+        for(let i=0; i<100; i++) rains.push(new Rain());
+        function animateRain() {
+            rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
+            rains.forEach(r => { r.update(); r.draw(); });
+            requestAnimationFrame(animateRain);
+        }
+        animateRain();
+    </script>
+</body>
+</html>
