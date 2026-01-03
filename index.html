@@ -17,16 +17,17 @@
             position: relative;
         }
 
-        /* --- 音乐控制按钮 --- */
+        /* --- 音乐控制按钮 (右上角) --- */
         #music-btn {
             position: fixed; top: 15px; right: 15px;
-            width: 30px; height: 30px;
-            background: rgba(255,255,255,0.2);
+            width: 32px; height: 32px;
+            background: rgba(255,255,255,0.15);
             border-radius: 50%; z-index: 1000;
             display: flex; justify-content: center; align-items: center;
             cursor: pointer; border: 1px solid rgba(255,255,255,0.3);
+            font-size: 14px;
         }
-        #music-btn.playing { animation: spin 4s linear infinite; background: rgba(255,255,255,0.5); }
+        #music-btn.playing { animation: spin 4s linear infinite; background: rgba(255,255,255,0.5); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* --- 聊天界面 --- */
@@ -52,25 +53,24 @@
             overflow-y: auto; overflow-x: hidden;
         }
 
-        /* 消息容器，用于布局 */
+        /* 消息行与气泡 */
         .msg-row {
             display: flex; flex-direction: column; width: 100%;
             margin: 6px 0; opacity: 0;
             animation: popIn 0.3s forwards;
         }
-        .msg-row.sent { align-items: flex-end; }
-        .msg-row.received { align-items: flex-start; }
+        .msg-row.sent { align-items: flex-end; }     /* User在右 */
+        .msg-row.received { align-items: flex-start; } /* Jin在左 */
 
-        /* 气泡本体 */
         .bubble {
             max-width: 85%; padding: 12px 16px;
             border-radius: 18px; font-size: 15px; line-height: 1.5;
             word-wrap: break-word; position: relative;
         }
-        .bubble.received { background: #2c2c2e; color: #fff; border-bottom-left-radius: 4px; }
-        .bubble.sent { background: #0A84FF; color: #fff; border-bottom-right-radius: 4px; }
+        .bubble.received { background: #2c2c2e; color: #fff; border-bottom-left-radius: 4px; } /* 左侧灰色 */
+        .bubble.sent { background: #0A84FF; color: #fff; border-bottom-right-radius: 4px; }     /* 右侧蓝色 */
 
-        /* 拒收样式 - 核心修复 */
+        /* 拒收提示 UI */
         .error-wrapper {
             display: flex; align-items: center; justify-content: flex-end;
             width: 100%; margin-top: 5px;
@@ -105,9 +105,11 @@
         }
 
         .typing-cursor::after { content: '|'; animation: blink 1s infinite; color: #0A84FF; margin-left: 2px; }
+        
+        /* 开始遮罩 */
         .start-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 300;
+            background: rgba(0,0,0,0.85); z-index: 300;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             color: #fff; transition: opacity 0.5s; cursor: pointer;
         }
@@ -208,9 +210,11 @@
     <!-- 音乐控制开关 -->
     <div id="music-btn">🎵</div>
 
-    <!-- 更可靠的音乐直链 (悲伤钢琴曲) -->
+    <!-- 换源：尝试使用一个相对稳定的 CDN 资源，或者你可以替换成你确认能播放的 mp3 链接 -->
     <audio id="bgm" loop preload="auto">
-        <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Kai_Engel/Chapter_One_-_Cold/Kai_Engel_-_04_-_November.mp3" type="audio/mpeg">
+        <source src="https://static.babycdn.com/mp3/love_story.mp3" type="audio/mpeg">
+        <!-- 如果上面的失效，可以用这个备用（请在部署前测试） -->
+        <!-- <source src="你的MP3链接.mp3" type="audio/mpeg"> -->
     </audio>
     
     <!-- 燃烧音效 -->
@@ -240,7 +244,6 @@
         <div class="envelope-wrapper" id="envelope">
             <div class="lid" id="lid"></div>
             <div class="letter" id="letter">
-                <!-- 你的文案 -->
                 <div class="text-line">User，展信佳。</div>
                 <div class="text-line">北水的雨季又要到了，不知道你那里有没有带伞。</div>
                 <div class="text-line">原谅我用这种方式告别，面对你，我怕我会心软。</div>
@@ -263,7 +266,8 @@
     <div class="polaroid-container" id="photo-card">
         <div class="fire-overlay"></div>
         <!-- ⚠️ 图片替换处 -->
-        <img src="https://i.pinimg.com/564x/a6/50/20/a6502030f576142750058b88753284c0.jpg" class="photo-img" alt="Memory">
+        <img src="https://img.baidu.re/i/2026/01/fekjkw.jpeg
+" class="photo-img" alt="Memory">
         <div style="text-align: center; color: #333; margin-top: 10px; font-family: 'Ma Shan Zheng'; font-size: 18px;">那年的北水县</div>
         <div style="text-align: center; color: #999; font-size: 10px; margin-top: 5px;">点击销毁回忆</div>
     </div>
@@ -282,9 +286,19 @@
         let rainSpeed = 5;
 
         // --- 音乐控制逻辑 ---
+        function playMusic() {
+            bgm.volume = 0.5;
+            bgm.play().then(() => {
+                musicBtn.classList.add('playing');
+            }).catch(e => {
+                console.log("Autoplay failed, waiting for interaction");
+                musicBtn.classList.remove('playing');
+            });
+        }
+
         function toggleMusic() {
             if (bgm.paused) {
-                bgm.play().then(() => musicBtn.classList.add('playing')).catch(e => console.log(e));
+                playMusic();
             } else {
                 bgm.pause();
                 musicBtn.classList.remove('playing');
@@ -297,9 +311,8 @@
             startBtn.style.opacity = 0;
             setTimeout(() => startBtn.style.display = 'none', 500);
             
-            // 尝试播放音乐
-            bgm.volume = 0.5;
-            toggleMusic();
+            // 立即尝试播放音乐
+            playMusic();
             runDramaPart1();
         });
 
@@ -321,7 +334,9 @@
             }
         }
         
-        // 核心修改：addMsg 改良版，不把拒收信息塞进气泡
+        // 核心修改：addMsg 支持左右区分
+        // type = 'received' (Jin, 左侧)
+        // type = 'sent' (User, 右侧)
         function addMsg(text, type='received') {
             const row = document.createElement('div');
             row.className = `msg-row ${type}`;
@@ -333,29 +348,33 @@
             row.appendChild(bubble);
             chatBox.appendChild(row);
             chatBox.scrollTop = chatBox.scrollHeight;
-            return row; // 返回行对象，方便后续添加拒收信息
+            return row; 
         }
 
+        // --- 修正后的剧情逻辑 ---
         async function runDramaPart1() {
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 800));
+            
+            // 1. User 犹豫打字 (输入框有动画，但没发出去)
             await typeFake("我们...见一面吧？");
             await new Promise(r => setTimeout(r, 800));
-            await deleteFake(); 
+            await deleteFake(); // 删掉了
 
             await typeFake("我好想你");
             await new Promise(r => setTimeout(r, 1000));
-            await deleteFake();
+            await deleteFake(); // 又删掉了
 
-            await typeFake("我们算了吧。"); 
+            // 2. Jin 突然发来消息 (出现在左侧 received)
+            // 这里输入框不应该有打字动画，因为是对方发的
             await new Promise(r => setTimeout(r, 500));
-            fakeInput.innerText = "";
-            addMsg("我们算了吧。", 'sent');
+            addMsg("我们算了吧。", 'received'); 
             
             await new Promise(r => setTimeout(r, 2000));
-            addMsg("别等我了，不值得。", 'sent');
+            addMsg("别等我了，不值得。", 'received');
             
             await new Promise(r => setTimeout(r, 3000));
             
+            // 3. 转场
             phoneScreen.style.opacity = 0;
             setTimeout(() => {
                 phoneScreen.style.display = 'none';
@@ -402,14 +421,14 @@
             this.classList.add('burning');
             
             setTimeout(() => {
-                // 核心修复：立刻停止燃烧音效
+                // 停止燃烧音效
                 fireSound.pause();
                 fireSound.currentTime = 0;
                 
                 this.style.display = 'none';
                 letterScene.style.opacity = 0;
                 showFinalInput();
-            }, 2400); // 燃烧动画时间结束后立刻切
+            }, 2400); 
         });
 
         function showFinalInput() {
@@ -433,11 +452,11 @@
             const txt = realInput.value;
             if(!txt) return;
 
-            // 1. 发送消息（获取返回的 row 对象）
+            // 1. User 发送消息 (出现在右侧 sent)
             const lastRow = addMsg(txt, 'sent');
             realInput.value = '';
             
-            // 2. 延迟显示拒收UI（在气泡外面）
+            // 2. 拒收逻辑
             setTimeout(() => {
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'error-wrapper';
@@ -445,10 +464,10 @@
                     <div class="error-text">消息已发出，但被对方拒收了。</div>
                     <div class="error-icon">!</div>
                 `;
-                // 插入到消息气泡的后面，而不是里面
+                // 插入到消息气泡的外部
                 lastRow.appendChild(errorDiv);
                 
-                // 消息本体变暗
+                // 消息气泡变暗
                 lastRow.querySelector('.bubble').style.opacity = 0.6;
                 
                 // 音乐淡出
@@ -472,31 +491,4 @@
         function resizeCanvas() { rCanvas.width = window.innerWidth; rCanvas.height = window.innerHeight; }
         window.addEventListener('resize', resizeCanvas); resizeCanvas();
 
-        const rains = [];
-        class Rain {
-            constructor() { this.reset(); }
-            reset() {
-                this.x = Math.random() * rCanvas.width;
-                this.y = Math.random() * -rCanvas.height;
-                this.length = Math.random() * 20 + 10;
-                this.speed = Math.random() * 2 + rainSpeed;
-            }
-            update() {
-                this.y += this.speed + (rainSpeed - 5);
-                if (this.y > rCanvas.height) this.reset();
-            }
-            draw() {
-                rCtx.strokeStyle = 'rgba(174,194,224,0.3)'; rCtx.lineWidth = 1.5;
-                rCtx.beginPath(); rCtx.moveTo(this.x, this.y); rCtx.lineTo(this.x, this.y + this.length); rCtx.stroke();
-            }
-        }
-        for(let i=0; i<100; i++) rains.push(new Rain());
-        function animateRain() {
-            rCtx.clearRect(0, 0, rCanvas.width, rCanvas.height);
-            rains.forEach(r => { r.update(); r.draw(); });
-            requestAnimationFrame(animateRain);
-        }
-        animateRain();
-    </script>
-</body>
-</html>
+        const rains =
